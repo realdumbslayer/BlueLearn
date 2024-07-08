@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+      <meta content="width=device-width, initial-scale=1.0" name="viewport">
+      <meta content="" name="keywords">
+      <meta content="" name="description">
+    <!-- Icon Font Stylesheet -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Favicon -->
+    <link href="static/images/favicon.ico" rel="icon">
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="static/css/bootstrap.min.home.css" rel="stylesheet">
+    <link href="static/css/registerstyle.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navbar Start -->
+    <nav class="navbar navbar-expand-lg bg-white navbar-light shadow sticky-top p-0">
+      <a href="/" class="navbar-brand d-flex align-items-center px-4 px-lg-5">
+          <h2 class="m-0 text-primary"><i class="fa fa-book me-3"></i>BlueLearn</h2>
+      </a>
+  </nav>
+  <!-- Navbar End -->
+  <a href="/"button class="custom-button"><i class="fas fa-arrow-left"></i></button></a>
+</div>
+<!-- Form Start -->
+<div class="overlay"></div>
+<div class="form">    
+    <div class="form-panel one">
+        <div class="form-header">
+            <h1 class="register-header">Register Account</h1>
+        </div>
+        <div class="form-content">
+            <!-- Include any messages if needed -->
+            {% include 'includes/_messages.html' %}
+            <form action="#" method="POST">
+                <!-- Role selection -->
+                <div class="form-group">
+                    <label>Role</label>
+                    <select name="role" class="form-control">
+                        <option value="" disabled selected>Select a role</option>
+                        <option value="student">Student</option>
+                        <option value="instructor">Instructor</option>
+                    </select>
+                </div>
+                <!-- First Name -->
+                <div class="form-group">
+                    <label for="username">First Name</label>
+                    <input type="text" class="form-control" name="first_name" required placeholder="First Name">
+                </div>
+                <!-- Last Name -->
+                <div class="form-group">
+                    <label for="password">Last Name</label>
+                    <input type="text" class="form-control" name="last_name" required placeholder="Last Name">
+                </div>
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" name="email" required placeholder="Email">
+                </div>
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="email">Password</label>
+                    <input type="password" class="form-control" name="password" required placeholder="Password">
+                </div>
+                <!-- Security Question -->
+                <div class="form-group">
+                  <label for="security_question">Security Question</label>
+                  <select name="security_question" class="form-control" required>
+                      <option value="" disabled selected>Select a security question</option>
+                      <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+                      <option value="What is the name of your first pet?">What is the name of your first pet?</option>
+                      <option value="What city were you born in?">What city were you born in?</option>
+                      <option value="What is your favorite book?">What is your favorite book?</option>
+                      <option value="What was the name of your first school?">What was the name of your first school?</option>
+                      <option value="What is the name of your favorite childhood friend?">What is the name of your favorite childhood friend?</option>
+                      <option value="In what city or town did your mother and father meet?">In what city or town did your mother and father meet?</option>
+                  </select>
+              </div>
+                <!-- Security Answer -->
+                <div class="form-group">
+                    <label for="security_answer">Security Answer</label>
+                    <input type="password" class="form-control" name="security_answer" required placeholder="Security Answer">
+                </div>
+                <!-- Register Button -->
+                <div class="form-group">
+                    <button type="submit">Register</button>
+                </div>
+                <!-- Login Link -->
+                <a href="/login">Already have an account? Login here</a>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Form End -->
+</body>
+</html>

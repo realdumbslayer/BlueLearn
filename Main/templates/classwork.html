@@ -1,0 +1,759 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+{% include 'includes/_classnav.html '%}
+
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<div class="container2">
+    {% if not is_student %}
+        <div class="dropdown">
+            <button class="my-button" onclick="toggleDropdown()"><i class="fa fa-plus -v"></i> Create</button>
+            <div class="dropdown-content">
+                <a href="#" data-toggle="modal" data-target="#addMaterialModal">Material</a>
+                <a href="#" data-toggle="modal" data-target="#addAssignmentModal">Assignment</a>
+                <a href="#" data-toggle="modal" data-target="#addQuestionModal">Question</a>
+                <a href="#" data-toggle="modal" data-target="#addTopicModal">Topic</a>
+            </div>
+        </div>
+    {% endif %}
+    <br><br>
+    <!-- Display Topics -->
+
+  <div class="topics-container">
+{% set all_posts = materials + assignments + questions %}
+{% set sorted_posts = all_posts | sort(attribute='create_date', reverse=true) %}
+    {% for topic in topics | reverse %}
+    <div class="topic" id="topic_{{ topic.id|string }}" ondrop="drop(event, '{{ topic.id|string }}')" ondragover="allowDrop(event)">
+        <div class="topic-header d-flex align-items-center mb-2">
+            <h2>{{ topic.name }}</h2>
+            {% if not is_student %}
+            <div class="ml-auto content_dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="topicDropdown{{ topic.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="topicDropdown{{ topic.id }}">
+                    <a class="dropdown-item edit-topic" href="#" data-topic-id="{{ topic.id }}">Edit</a>
+                    <a class="dropdown-item delete-topic" href="#" data-topic-id="{{ topic.id }}">Delete</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <div class="post-container">
+            {% for post in sorted_posts %}
+            {% if post.topic_id == topic.id %}
+                {% if post.type == 'materialc' %}
+                    <div class="classwork-panel-container" style="display: flex; flex-direction: column;">
+                        <div class="classwork-panel draggable" draggable="true" id="post_{{ post.id }}" ondragstart="drag(event)">
+                            <a href="{{ url_for('materialc', id=post.id) }}" style="display: none;" id="materialcLink{{ post.id }}"></a>
+                            <div class="material-content" onclick="redirectToMaterialC('{{ post.id }}')">
+                                <span class="material-icon fa fa-file"></span>
+                                {{ post.name }}
+                            </div>
+                            {% if not is_student %}
+                                <div class="ml-auto content_dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="materialDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="materialDropdown{{ post.id }}">
+                                        <a class="dropdown-item edit-materialc" href="#" data-material-id="{{ post.id }}"  data-class-id="{{ class_id }}">Edit</a>
+        
+                                        <a class="dropdown-item delete-material" href="#" data-material-id="{{ post.id }}">Delete</a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% elif post.type == 'assignment' %}
+                    <div class="classwork-panel-container" style="display: flex; flex-direction: column;">
+                        <div class="classwork-panel draggable" draggable="true" id="post_{{ post.id }}" ondragstart="drag(event)">
+                            <a href="{{ url_for('assignment', id=post.id) }}" style="display: none;" id="assignmentLink{{ post.id }}"></a>
+                            <div class="assignment-content" onclick="redirectToAssignment('{{ post.id }}')">
+                                <span class="classwork-icon fa fa-clipboard"></span>
+                               {{ post.name }}
+                            </div>
+                    {% if not is_student %}
+                        <div class="ml-auto content_dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="assignmentDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="assignmentDropdown{{ post.id }}">
+                                <a class="dropdown-item edit-assignment" href="#" data-assignment-id="{{ post.id }}" data-class-id="{{ class_id }}">Edit</a>
+                                <a class="dropdown-item delete-assignment" href="#" data-assignment-id="{{ post.id }}">Delete</a>
+                            </div>
+                        </div>
+                    {% endif %}
+                        </div>
+                    </div>
+                    {% elif post.type == 'question' %}
+                    <div class="classwork-panel draggable" draggable="true" id="post_{{ post.id }}" ondragstart="drag(event)">
+                        <a href="{{ url_for('question', id=post.id) }}" style="display: none;" id="questionLink{{ post.id }}"></a>
+                        <div class="assignment-content" onclick="redirectToQuestion('{{ post.id }}')">
+                            <span class="classwork-icon fa fa-question-circle"></span>
+                            {{ post.name }}
+                        </div>
+                        {% if not is_student %}
+                        <div class="ml-auto content_dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="questionDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="questionDropdown{{ post.id }}">
+                                <a class="dropdown-item edit-question" href="#" data-question-id="{{ post.id }}" data-class-id="{{ class_id }}">Edit</a>
+                                <a class="dropdown-item delete-question" href="#" data-question-id="{{ post.id }}">Delete</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                     </div>
+                {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+         <!-- Input field for editing topic name -->
+         <div class="edit-topic-form" style="display: none;">
+            <textarea class="form-control edit-reply-textarea" style="display: none;">{{ topic.topic }}</textarea>
+            <button type="button" class="btn btn-primary save-topic">Save</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<hr>
+
+<!-- Add Material Modal -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" role="dialog" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMaterialModalLabel">Add Material</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addMaterialForm" method="POST" action="{{ url_for('add_materialc') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}">
+                    <div class="form-group">
+                        <label for="materialName">Material Name</label>
+                        <input type="text" class="form-control" id="materialName" name="name" placeholder="Enter Material Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialDescription">Description</label>
+                        <textarea name="description" class="form-control" placeholder="Description" id="editor"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic">Select Topic:</label>
+                        <select class="form-control" name="topic" id="topic" required>
+                            {% for topic in topics %}
+                                <option value="{{ topic.id }}">{{ topic.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" class="form-control-file" id="assignmentFile" name="file">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="submitMaterialForm()">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to submit form data from the pop-up modal
+    function submitMaterialForm() {
+        // Show the spinner
+        document.getElementById("spinner").style.display = "block";
+
+        // Get the form
+        var form = document.getElementById("addMaterialForm");
+
+        // Create a FormData object to send the form data
+        var formData = new FormData(form);
+
+        // Create a new XMLHttpRequest object
+        var xhr = new XMLHttpRequest();
+
+        // Define what happens on successful data submission
+        xhr.onload = function(event) {
+            if (xhr.status === 200) {
+                // Hide the spinner when upload is complete
+                document.getElementById("spinner").style.display = "none";
+                // Show a success message
+                showMessage("Material Uploaded Successfully!");
+            }
+        };
+
+        // Define what happens in case of error
+        xhr.onerror = function() {
+            console.error("Error uploading file.");
+            // Hide the spinner in case of error
+            document.getElementById("spinner").style.display = "none";
+        };
+
+        // Set up the request
+        xhr.open("POST", form.action, true);
+
+        // Send the form data
+        xhr.send(formData);
+    }
+
+    // Function to display a message on the website
+    function showMessage(message) {
+        // Create a new element for the message
+        var messageElement = document.createElement("div");
+        messageElement.className = "alert alert-success";
+        messageElement.setAttribute("role", "alert");
+        messageElement.textContent = message;
+
+        // Prepend the message element to the body
+        document.body.insertBefore(messageElement, document.body.firstChild);
+
+        // Remove the message after a certain duration (e.g., 5 seconds)
+        setTimeout(function() {
+            document.body.removeChild(messageElement);
+        }, 5000);
+    }
+</script>
+
+
+<!-- Add Assignment Modal -->
+<div class="modal fade" id="addAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="addAssignmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addAssignmentModalLabel">Assignment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_assignment') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}"> <!-- Include class_id as a hidden input field -->
+                    <div class="form-group">
+                        <label for="assignmentName">Title</label>
+                        <input type="text" class="form-control" id="assignmentName" name="name" placeholder="Enter Assignment Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialDescription">Instructions (optional)</label>
+                        <textarea name="description" class="form-control" id="assignmentEditor" placeholder="Description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="score">Score</label>
+                        <input type="number" class="form-control" id="score" name="score" placeholder="Score" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" class="form-control" id="dueDate" name="due_date" placeholder="Due Date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic">Select Topic:</label>
+                        <select class="form-control" name="topic" id="topic">
+                            {% for topic in topics %}
+                                <option value="{{ topic.id }}">{{ topic.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="file" class="form-control-file" id="assignmentFile" name="file">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Question Modal -->
+<div class="modal fade" id="addQuestionModal" tabindex="-1" role="dialog" aria-labelledby="addQuestionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addQuestionModalLabel">Question</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_question') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}"> <!-- Include class_id as a hidden input field -->
+                    <div class="form-group">
+                        <label for="questionName">Question</label>
+                        <input type="text" class="form-control" id="questionName" name="name"  placeholder="Enter Question Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="questionDescription">Instructions</label>
+                        <textarea name="description" class="form-control" id="questionEditor" placeholder="Description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="score">Score</label>
+                        <input type="number" class="form-control" id="score" name="score" placeholder="Score">
+                    </div>
+                    <div class="form-group">
+                        <label for="dueDate">Due Date</label>
+                        <input type="date" class="form-control" id="dueDate" name="due_date" placeholder="Due Date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration</label>
+                        <input type="time" class="form-control" id="duration" name="duration" required>
+                    </div>    
+                    <div class="form-group">
+                        <label for="topic">Select Topic:</label>
+                        <select class="form-control" name="topic" id="topic">
+                            {% for topic in topics %}
+                                <option value="{{ topic.id }}">{{ topic.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" >Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Topic Modal -->
+<div class="modal fade" id="addTopicModal" tabindex="-1" role="dialog" aria-labelledby="addTopicModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTopicModalLabel">Add Topic</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_topic') }}">
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}"> <!-- Include class_id as a hidden input field -->
+                    <div class="form-group">
+                        <label for="topicName">Topic Name</label>
+                        <input type="text" class="form-control" id="topicName" name="name" placeholder="Enter Topic Name" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% if not is_student %}
+<script>
+    function toggleDropdown() {
+        var dropdownContent = document.querySelector('.dropdown-content');
+        dropdownContent.classList.toggle('show');
+    }
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+    // Function to handle the drag event
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.id);
+    }
+    // Function to handle the drop event
+    function drop(event, topicId) {
+        event.preventDefault();
+        var postId = event.dataTransfer.getData("text");
+        var post = document.getElementById(postId);
+        var topicContainer = document.getElementById('topic_' + topicId).querySelector('.post-container');
+        topicContainer.appendChild(post);
+        savePostPosition(postId, topicId); // Save the position of the dropped post
+    }
+    // Function to save post positions to local storage
+    function savePostPosition(postId, topicId) {
+        // Retrieve existing stored positions or initialize an empty object
+        var storedPositions = JSON.parse(localStorage.getItem('post_positions')) || {};
+        // Update the position of the dropped post
+        storedPositions[postId] = topicId;
+        // Save the updated positions back to local storage
+        localStorage.setItem('post_positions', JSON.stringify(storedPositions));
+    }
+    // Function to load post positions from local storage and place them accordingly
+    function loadPostPositions() {
+        var storedPositions = JSON.parse(localStorage.getItem('post_positions')) || {};
+        for (var postId in storedPositions) {
+            if (storedPositions.hasOwnProperty(postId)) {
+                var topicId = storedPositions[postId];
+                var topicContainer = document.getElementById('topic_' + topicId).querySelector('.post-container');
+                var post = document.getElementById(postId);
+                if (post && topicContainer) {
+                    topicContainer.appendChild(post);
+                }
+            }
+        }
+    }
+    // Call loadPostPositions when the page loads
+    document.addEventListener('DOMContentLoaded', loadPostPositions);
+</script>
+{% else %}
+<script>
+    // If user is a student, remove drag and drop functionality
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        // Prevent drag action for students
+        event.preventDefault();
+    }
+
+    function drop(event) {
+        // Prevent drop action for students
+        event.preventDefault();
+    }
+</script>
+{% endif %}
+
+<!-- Include CKEditor script -->
+<script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script>
+<script>
+    // Function to open the form builder page
+    const openFormBuilder = () => {
+        window.location.href = '/formbuilder';
+    };
+</script>
+
+<script>
+    // Function to initialize CKEditor for a given ID
+    function initializeCKEditor(id) {
+        CKEDITOR.replace(id);
+    }
+
+    // Call initializeCKEditor function for each textarea
+    initializeCKEditor('editor');
+    initializeCKEditor('assignmentEditor');
+    initializeCKEditor('questionEditor');
+
+    function redirectToMaterialC(materialcId) {
+    var materialcLink = document.getElementById('materialcLink' + materialcId);
+    materialcLink.click();
+}
+
+    function redirectToAssignment(assignmentId) {
+        var assignmentLink = document.getElementById('assignmentLink' + assignmentId);
+        assignmentLink.click();
+    }
+
+    function redirectToQuestion(questionId) {
+        var questionLink = document.getElementById('questionLink' + questionId);
+        questionLink.click();
+    }
+</script>
+<script> 
+    // Function to handle the drop event
+    function drop(event, topicId) {
+        event.preventDefault();
+        var postId = event.dataTransfer.getData("text");
+        var post = document.getElementById(postId);
+        var topicContainer = document.getElementById('topic_' + topicId).querySelector('.post-container');
+        topicContainer.appendChild(post);
+        updatePostPosition(postId, topicId); // Update the post position after drop
+    }
+
+    // Function to update post position after drop
+    function updatePostPosition(postId, topicId) {
+        // Send an AJAX request to update the server-side data
+        var formData = new FormData();
+        formData.append('post_id', postId);
+        formData.append('topic_id', topicId);
+
+        fetch('/update_post_position', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log('Post position updated successfully');
+            } else {
+                throw new Error('Failed to update post position');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Function to load post positions from the server and place them accordingly
+    function loadPostPositions() {
+        // Send an AJAX request to fetch post positions from the server
+        fetch('/get_post_positions')
+        .then(response => response.json())
+        .then(data => {
+            for (var postId in data) {
+                if (data.hasOwnProperty(postId)) {
+                    var topicId = data[postId];
+                    var post = document.getElementById(postId);
+                    var topicContainer = document.getElementById('topic_' + topicId).querySelector('.post-container');
+                    if (post && topicContainer) {
+                        topicContainer.appendChild(post);
+                    }
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Call loadPostPositions when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPostPositions();
+    });
+
+    // Add event listeners to handle drag and drop
+    var postPanels = document.querySelectorAll('.draggable');
+    postPanels.forEach(function(panel) {
+        panel.addEventListener('dragstart', function(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        });
+    });
+
+    var topicContainers = document.querySelectorAll('.topic');
+    topicContainers.forEach(function(container) {
+        container.addEventListener('dragover', function(event) {
+            event.preventDefault();
+        });
+        container.addEventListener('drop', function(event) {
+            var topicId = container.id.split('_')[1];
+            drop(event, topicId);
+        });
+    });
+</script>
+
+<script>
+// Add event listeners for deleting topics
+document.querySelectorAll(".delete-topic").forEach(function(deleteLink) {
+    deleteLink.addEventListener("click", function(event) {
+        event.preventDefault();
+        var topicId = this.getAttribute("data-topic-id");
+        var classId = this.getAttribute("data-class-id");
+
+        // Send an AJAX request to delete the topic
+        fetch("/delete_topic/" + topicId, {
+            method: "POST",
+            body: new URLSearchParams({ class_id: classId }), // Include class_id in the body
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                console.log("Topic deleted successfully");
+                // Reload the page after successful delete
+                window.location.reload();
+            } else {
+                throw new Error("Failed to delete topic");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Add event listeners for editing topics
+        document.querySelectorAll(".edit-topic").forEach(function(editLink) {
+            editLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                var topicContainer = this.closest(".topic");
+                var topicName = topicContainer.querySelector("h2");
+                var editInput = document.createElement("input");
+                var saveButton = document.createElement("button");
+                var classId = this.getAttribute("data-class-id"); // Get class_id
+                
+                // Configure the edit input
+                editInput.type = "text";
+                editInput.className = "edit-topic-input";
+                editInput.value = topicName.textContent;
+                
+                // Configure the save button
+                saveButton.textContent = "Save";
+                saveButton.className = "save-topic-button";
+                saveButton.setAttribute("data-topic-id", this.getAttribute("data-topic-id"));
+                saveButton.setAttribute("data-class-id", classId);
+                
+                // Replace the topic name with the edit input and save button
+                topicName.style.display = "none";
+                topicContainer.insertBefore(editInput, topicContainer.firstChild);
+                topicContainer.insertBefore(saveButton, topicContainer.firstChild);
+                
+                // Hide the edit link
+                editLink.style.display = "none";
+            });
+        });
+    
+        // Add event listener for saving edited topics
+        document.addEventListener("click", function(event) {
+            if (event.target && event.target.classList.contains("save-topic-button")) {
+                var saveButton = event.target;
+                var topicContainer = saveButton.closest(".topic");
+                var topicId = saveButton.getAttribute("data-topic-id");
+                var editedTopicName = topicContainer.querySelector(".edit-topic-input").value;
+                var classId = saveButton.getAttribute("data-class-id"); // Get class_id from data attribute
+                
+                // Send an AJAX request to the server to save the edited topic
+                fetch("/edit_topic/" + topicId, {
+                    method: "POST",
+                    body: new URLSearchParams({ topic_name: editedTopicName, class_id: classId }), // Include class_id in the body
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Reload the page after successful edit
+                        window.location.reload();
+                    } else {
+                        throw new Error("Failed to edit topic");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            }
+        });
+    });
+    </script>
+<script>
+
+    // Add event listeners for editing and deleting assignments
+    document.querySelectorAll(".edit-assignment").forEach(function(editLink) {
+        editLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var assignmentId = this.getAttribute("data-assignment-id");
+            // Redirect to the edit assignment route
+            window.location.href = "/edit_assignment/" + assignmentId;
+        });
+    });
+
+    // Add event listeners for deleting assignments
+    document.querySelectorAll(".delete-assignment").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var assignmentId = this.getAttribute("data-assignment-id");
+            var classId = this.getAttribute("data-class-id"); // Retrieve class ID
+            
+            // Send an AJAX request to delete the assignment
+            fetch(`/delete_assignment/${assignmentId}?class_id=${classId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+
+            .then(response => {
+                if (response.ok) {
+                    console.log("Assignment deleted successfully");
+                    // Reload the page after successful delete
+                    window.location.reload();
+                } else {
+                    throw new Error("Failed to delete assignment");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+</script>
+<script>
+    // Add event listeners for editing and deleting question
+
+    document.querySelectorAll(".edit-question").forEach(function(editLink) {
+        editLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var questionId = this.getAttribute("data-question-id");
+            var classId = this.getAttribute("data-class-id"); // Assuming you need to pass class ID as well
+            // Redirect to the edit question route
+            window.location.href = "/edit_question/" + questionId + "?class_id=" + classId;
+        });
+    });
+
+    // Add event listeners for deleting questions
+    document.querySelectorAll(".delete-question").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var questionId = this.getAttribute("data-question-id");
+            var classId = this.getAttribute("data-class-id"); // Retrieve class ID
+            
+            // Send an AJAX request to delete the question
+            fetch(`/delete_question/${questionId}?class_id=${classId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+
+            .then(response => {
+                if (response.ok) {
+                    console.log("Question deleted successfully");
+                    // Reload the page after successful delete
+                    window.location.reload();
+                } else {
+                    throw new Error("Failed to delete question");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+</script>
+<script>
+// Add event listeners for editing and deleting materialsc
+document.querySelectorAll(".edit-materialc").forEach(function(editLink) {
+    editLink.addEventListener("click", function(event) {
+        event.preventDefault();
+        var materialcId = this.getAttribute("data-material-id");
+        // Redirect to the edit material route
+        window.location.href = "/edit_materialc/" + materialcId;
+    });
+});
+
+// Add event listener for deleting materials
+document.querySelectorAll(".delete-material").forEach(function(deleteLink) {
+    deleteLink.addEventListener("click", function(event) {
+        event.preventDefault();
+        var materialId = this.getAttribute("data-material-id");
+        var classId = this.getAttribute("data-class-id"); // Get class ID
+        // Send AJAX request to delete the material
+        fetch("/delete_materialc/" + materialId + "?class_id=" + classId, { // Pass class ID in query parameter
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Reload the page after successful deletion
+                window.location.reload();
+            } else {
+                throw new Error("Failed to delete material");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    });
+});
+</script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script>
+<script src="{{ url_for('static', filename='js/questionForm.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/preview.js') }}"></script>
+{% endblock %}

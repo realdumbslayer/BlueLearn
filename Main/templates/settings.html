@@ -1,0 +1,119 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile Settings</title>
+<style>
+    .container {
+        padding: 20px;
+        margin-left: 50px; /* Adjust this value to shift the content more or less */
+        border: 1px solid #ccc; /* Add border to the textarea within the panel */
+        border-radius: 10px;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 30px;
+        height: 17px;
+    }
+    .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 10px;
+        width: 10px;
+        left: 4px;
+        bottom: 4px;
+        background-color: rgb(0, 0, 0);
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+    input:checked + .slider:before {
+        -webkit-transform: translateX(13px);
+        -ms-transform: translateX(13px);
+        transform: translateX(13px);
+    }
+    .slider.round {
+        border-radius: 50px;
+    }
+    .slider.round:before {
+        border-radius: 50%;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Profile</h1>
+        <h5>Profile Picture</h5>
+        <p>Change PFP</p>
+        <h5>Account Settings</h5>
+        <p>Change your password and security options.</p>
+        <h5>Change Name</h5>
+        <p>Change your name</p>
+        <button onclick=location.href="{{ url_for('edit_name') }}">Change Name</button>
+    </div>
+      <br>
+      <div class="container">
+        <h1>Notifications</h1>
+        <h5>Email</h5>
+        <p>These settings apply to the notifications that you receive by email.</p>
+        <button onclick=location.href="{{ url_for('edit_email') }}">Change Email</button>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Allow email notifications</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Comments</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Comments on your posts</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Comments that mention you</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Private comments on work</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Classes that you teach</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Late submissions of student work</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Resubmissions of student work</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Invitations to co-teach classes</h6>
+        
+        <label class="switch"><input type="checkbox"><span class="slider round"></span></label>
+        <h6>Scheduled post published or failed</h6>
+      </div>
+</body>
+</html>
+{% endblock %}

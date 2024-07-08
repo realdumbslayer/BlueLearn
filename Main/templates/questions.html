@@ -1,0 +1,26 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+{% include 'includes/_classnav.html '%}
+
+<div class="container">
+   <h2>questions</h2>
+   {% for question in questions %}
+   <div class="question-panel">
+       <a href="{{ url_for('question', id=question.id) }}" style="display: none;" id="questionLink{{ question.id }}"></a>
+       <div class="question-content" onclick="redirectToQuestion('{{ question.id }}')">
+           <span class="question-icon fa fa-file"></span>
+           {{ question.name }}
+       </div>
+   </div>
+   {% endfor %}
+</div>
+
+<script>
+   function redirectToQuestion(questionId) {
+       var Question = document.getElementById('questionLink' + questionId);
+       questionLink.click();
+   }
+</script>
+
+{% endblock %}

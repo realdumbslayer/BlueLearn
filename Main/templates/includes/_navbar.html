@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+    </head>
+<body>
+<div class="wrapper d-flex align-items-stretch">
+{% if session.logged_in %}
+    {% if session.role == 'instructor' %}
+    <nav id="sidebar">
+        <div class="p-4">
+            <h1><a href="/dashboard" class="logo"></a></h1>
+            <ul class="list-unstyled components mb-5">
+                <li class="active">
+                    <h1 style="display: block; text-align: center; font-family: Nunito;"><a href="/classes" class="logo">Home</a></h1>
+                </li>
+                <hr>
+                <div class="custom-menu">
+                    <button type="button" id="sidebarCollapse" class="btn btn-primary">
+                        <i class="fa fa-bars"></i>
+                        <span class="sr-only">Toggle Menu</span>
+                    </button>
+                </div>
+                <li>
+                    <a href="/classes"><span class="fa fa-briefcase mr-3"></span>Teaching</a>
+                    <ul>
+                        {% for class in classes|sort(attribute='classname') %}
+                        <li>
+                            <a href="/class_content/{{ class.id }}"><span class="fa fa-book mr-3"></span>{{ class.classname }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li>             
+                    <a href="/archived_classes"><span class="fa fa-archive mr-3"></span>Archive Classes</a>
+                    <ul>
+                        {% for class in archived_classes %}
+                        <li>
+                            <a href="/class_content/{{ class.id }}"><span class="fa fa-book mr-3"></span>{{ class.classname }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <hr>
+                <li>
+                    <a href="/settings"><span class="fa fa-gear mr-3"></span>Settings</a>
+                </li>
+                <li>
+                    <a href="/logout"><span class="fa fa-paper-plane mr-3"></span>Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    {% else %}
+    <!-- Student Navbar -->
+    <nav id="sidebar">
+        <div class="p-4">
+            <ul class="list-unstyled components mb-5">
+                <li class="active">
+                <h1 style="display: block; text-align: center;font-family: Nunito; "><a href="/enroll" class="logo">Home</a></h1>
+                </li>
+                <hr>
+                <div class="custom-menu">
+                    <button type="button" id="sidebarCollapse" class="btn btn-primary">
+                        <i class="fa fa-bars"></i>
+                        <span class="sr-only">Toggle Menu</span>
+                    </button>
+                </div>
+                <li>
+                <li>
+                    <a href="/enroll"><span class="fa fa-book mr-3"></span>Classes</a>
+                    <ul>
+                        {% for class in enrolled_classes | reverse %}
+                        <li>
+                            <a href="/class_content/{{ class.id }}"><span class="fa fa-book mr-3"></span>{{ class.classname }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li>             
+                    <a href="/archived_classes"><span class="fa fa-archive mr-3"></span>Archive Classes</a>
+                    <ul>
+                        {% for class in archived_classes %}
+                        <li>
+                            <a href="/class_content/{{ class.id }}"><span class="fa fa-book mr-3"></span>{{ class.classname }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <hr>
+                <li>
+                    <a href="/settings"><span class="fa fa-gear mr-3"></span>Settings</a>
+                </li>
+                <li>
+                    <a href="/logout"><span class="fa fa-paper-plane mr-3"></span> Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+        {% endif %}
+    {% endif %}
+
+    <!-- Page Content  -->
+    <div id="content" class="p-4 p-md-5 pt-5">
+        {% include 'includes/_messages.html' %}
+        {% block body %}
+        {% endblock %}
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popper.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Additional Scripts -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script>
+<script type="text/javascript">
+    CKEDITOR.replace('editor');
+</script>
+</body>
+</html>
+
+

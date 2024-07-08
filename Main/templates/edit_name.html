@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Edit Name</title>
+  </head>
+  <body>
+    <h1>Edit Your Name</h1>
+    <form method="POST" action="{{ url_for('edit_name') }}">
+      <div>
+        {{ form.first_name.label }}<br>
+        {{ form.first_name(size=32) }}<br>
+        {% for error in form.first_name.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+      </div>
+      <div>
+        {{ form.last_name.label }}<br>
+        {{ form.last_name(size=32) }}<br>
+        {% for error in form.last_name.errors %}
+          <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+      </div>
+      <div>
+        <input type="submit" value="Update Name">
+      </div>
+    </form>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+  </body>
+</html>

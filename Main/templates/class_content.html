@@ -1,0 +1,1180 @@
+{% extends 'includes/_navbar.html' %}
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+{% block body %}
+{% include 'includes/_classnav.html' %}
+<div class="container">
+    <div class="card text-white custom-card-1" style="max-width: 100%; margin: 0 auto 20px; position: relative; border-radius: 10px;">
+        <img id="banner-image" class="card-img" src="{{ url_for('static', filename='banners/' + banner_filename) }}" alt="Card image" height="270" style="border-radius: 10px;">
+        <div class="card-img-overlay">
+            <div class="card-text" style="font-size: 30px; position: absolute; bottom: 100px;">Class: {{ classname }}</div>
+            <div class="card-text" style="font-size: 20px; position: absolute; bottom: 50px;">Section: {{ classsection }}</div>
+            <!-- Show the instructor's name -->
+            <div class="card-text" style="font-size: 20px; position: absolute; bottom: 0px;">Instructor: {{ instructor_first_name }} {{ instructor_last_name }}</div>
+            {% if user_role == 'instructor' %}
+            <div class="dropdown" style="position: absolute; top: 10px; right: 10px;">
+                <button class="btn btn-secondary" id="uploadButton" data-toggle="modal" data-target="#exampleModal" style="background-color: white; color: #06BBCC; margin-right:10px; margin-top: 10px; border:none; font-size: small; font-style: bold;">Customise</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Banners</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Placeholder for images -->
+                <div id="imageContainer" class="image-container"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("uploadButton").addEventListener("click", function() {
+        fetch('/banners')
+            .then(response => response.json())
+            .then(data => {
+                const imageContainer = document.getElementById("imageContainer");
+                imageContainer.innerHTML = '';
+                data.forEach(image => {
+                    const imgElement = document.createElement('img');
+                    imgElement.src = "{{ url_for('static', filename='banners/') }}" + image;
+                    imgElement.classList.add("img-fluid");
+                    imgElement.alt = "Uploaded Image";
+                    imgElement.addEventListener("click", function() {
+                        document.getElementById("banner-image").src = this.src;
+                        localStorage.setItem("selectedImage", this.src);
+                        // Send selected image filename to the backend
+                        const formData = new FormData();
+                        formData.append('selected_banner', image);
+                        fetch('/save_banner', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Handle response if needed
+                        })
+                        .catch(error => console.error('Error saving selected banner:', error));
+                    });
+                    imageContainer.appendChild(imgElement);
+                });
+            })
+            .catch(error => console.error('Error fetching images:', error));
+    });
+</script>
+
+
+<style>
+    .image-container img {
+        width: 310px; /* Example custom style */
+        height: 110px; /* Example custom style */
+        margin: 2px; /* Example custom style */
+        border-radius: 10px; /* Example custom style */
+    }
+    .image-container {
+        display: flex; /* Use flexbox */
+        justify-content: center; /* Center horizontally */
+        align-items: center; /* Center vertically */
+        flex-wrap: wrap; /* Allow images to wrap to the next line */
+    }
+</style>
+<!-- Bootstrap JavaScript and jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+
+<form id="commentForm" method="POST" action="{{ url_for('post_comment') }}">
+    <input type="hidden" name="class_id" value="{{ class_data.id }}">
+    <div class="container bootdey">
+        <div class=" bootstrap snippets">
+            <div class="panel" style="margin-bottom: 20px;">
+                <div class="panel-body">
+                    <textarea name="comment" id="myTextarea" class="form-control" placeholder="Announce something to your class"></textarea>
+                    <div class="mar-top clearfix">
+                        <button type="submit" id="postMessage" class="btn btn-sm btn-primary pull-right">Post</button>
+                        {% if user_role in ['instructor', 'student'] %}
+                            <a class="btn btn-trans btn-icon fa fa-file add-tooltip" href="#" data-toggle="modal" data-target="#addMaterialModal"></a>
+                            <a class="btn btn-trans btn-icon fa fa-image add-tooltip" href="#" data-toggle="modal" data-target="#uploadImageModal"></a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% set all_posts = comments|list + materials|list + images|list %}
+{% set sorted_posts = all_posts | sort(attribute='create_date', reverse=true) %}
+<div class="container" style="margin-top: 20px;">
+    {% for post in sorted_posts %}
+        {% if post.type == 'comment' %}
+            <div class="comment-panel">
+                <div class="comment-content">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                        <div>
+                            {% if post.student_email %}
+                                <div class="d-flex align-items-center">
+                                    <!-- Icon or any other element goes here -->
+                                    <p class="card-text text-muted">{{ post.student_first_name }} {{ post.student_last_name }}</p>
+                                </div>
+                                <p class="card-text text-muted small">{{ post.create_date }}</p> <!-- Date added below the student's name with smaller text -->
+                            {% elif post.instructor_email %}
+                                <div class="d-flex align-items-center">
+                                    <!-- Icon or any other element goes here -->
+                                    <p class="card-text text-muted">{{ post.instructor_first_name }} {{ post.instructor_last_name }}</p>
+                                </div>
+                                <p class="card-text text-muted small">{{ post.create_date }}</p> <!-- Date added below the instructor's name with smaller text -->
+                            {% endif %}
+                        </div>
+                        <!-- Dropdown for comment options -->
+                        {% if user_role == 'instructor' %}
+                            <div class="ml-auto">
+                                <div class="content_dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="commentDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="commentDropdown{{ post.id }}">
+                                        <a class="dropdown-item edit-comment" href="#" data-comment-id="{{ post.id }}">Edit</a>
+                                        <a class="dropdown-item delete-comment" href="#" data-comment-id="{{ post.id }}">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="comment-text ml-5">
+                        <p class="card-text">{{ post.comment | safe }}</p>
+                    </div>
+                    <textarea class="form-control edit-comment-textarea" style="display: none;">{{ post.comment }}</textarea>
+                    <button class="btn btn-sm btn-primary save-comment" style="display: none;">Save</button>
+                    <hr>
+                    <!-- Form for replying to the comment -->
+                    <form method="POST" action="{{ url_for('post_reply', comment_id=post.id) }}" class="reply-form">
+                        <input type="hidden" name="class_id" value="{{ class_data.id }}">
+                        <div class="input-group">
+                            <textarea name="reply" class="form-control reply-textarea" placeholder="Reply to this comment"></textarea>
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-sm btn-primary reply-submit"><i class="fa fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- Container for replies -->
+                    <div class="replies-container mt-3" style="display: none;">
+                        {% for reply in post.replies %}
+                            <div class="reply">
+                                <!-- Add three vertical dots icon for options -->
+                                <div class="reply-options">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                                        <div>
+                                            <div class="d-flex align-items-center">
+                                                <p class="card-text text-muted">{{ reply.user_first_name}}  {{ reply.user_last_name }}</p>
+                                            </div>
+                                            <p class="card-text text-muted small">{{ reply.create_date }}</p>
+                                        </div>
+                                        <!-- Dropdown for reply options -->
+                                        {% if user_role == 'instructor' %}
+                                            {% if reply.instructor_id == instructor_id %}
+                                                <div class="ml-auto">
+                                                    <div class="content_dropdown">
+                                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="replyDropdown{{ reply.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                            <i class="fa fa-ellipsis-v"></i>
+                                                        </button>
+                                                        <div class="dropdown-menu" aria-labelledby="replyDropdown{{ reply.id }}">
+                                                            <a class="dropdown-item edit-reply" href="#" data-reply-id="{{ reply.id }}">Edit</a>
+                                                            <a class="dropdown-item delete-reply" href="#" data-reply-id="{{ reply.id }}" data-class-id="{{ class_data.id }}">Delete</a>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="card-text ml-5">{{ reply.reply | safe }}</p>
+                                <!-- Textarea for editing the reply -->
+                                <textarea class="form-control edit-reply-textarea" style="display: none;">{{ reply.reply|safe }}</textarea>
+                                <!-- Save button for editing the reply -->
+                                <button class="btn btn-sm btn-primary save-reply" style="display: none;" data-reply-id="{{ reply.id }}" data-class-id="{{ class_data.id }}">Save</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% elif post.type == 'material' %}
+                <div class="material-panel" style="height: auto;">
+                    <div class="material">
+                        <div class="d-flex align-items-center mb-2">
+                            <!-- Displaying uploader's name and date -->
+                            <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                            <div>
+                                <p class="mb-0">{{ post.user_first_name }} {{ post.user_last_name }} posted a new material:  <span class="material-name" data-material-id="{{ post.id }}">{{ post.name }}</span></p>
+                                <p class="small-date mb-0">{{ post.create_date }}</p>
+                            </div>
+                            <!-- Dropdown menu for material options -->
+                            {% if user_role == 'instructor' %}
+                            <div class="ml-auto">
+                                <div class="content_dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="materialDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fa fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="materialDropdown{{ post.id }}">
+                                        <a class="dropdown-item edit-material" href="#" data-material-id="{{ post.id }}" data-class-id="{{ class_id }}">Edit</a>
+                                        <a class="dropdown-item delete-material" href="#" data-material-id="{{ post.id }}" data-class-id="{{ post.class_id }}">Delete</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- Form for posting comments on materials -->
+                    <div class="comment-form-wrapper">
+                        <form id="postMaterialCommentForm{{ post.id }}" method="POST" action="{{ url_for('post_material_comment', material_id=post.id) }}">
+                            <input type="hidden" name="class_id" value="{{ class_data.id }}">
+                            <!-- Form inputs here -->
+                            <div class="input-group">
+                                <textarea name="comment" class="form-control material-comment-textarea" placeholder="Write a comment" onclick="toggleCommentsMaterial('{{ post.id }}')"></textarea>
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-arrow-right"></i></button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <br>
+                    <!-- Form for editing comment -->
+                    <form method="POST" action="{{ url_for('edit_material_comment', comment_id=post.id) }}" class="edit-comment-form" style="display: none;">
+                        <input type="hidden" name="current_page_url" value="{{post.class_id }}">
+                        <div class="form-group">
+                            <input type="hidden" name="class_id" value="{{ post.class_id }}">
+                            <input type="text" name="edited_comment" class="form-control" placeholder="Edit Comment">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2">Save</button>
+                    </form>
+                    <!-- Form for deleting comment -->
+                    <form method="POST" action="{{ url_for('delete_material_comment', comment_id=post.id) }}" class="delete-comment-form" style="display: none;">
+                        <input type="hidden" name="class_id" value="{{ post.class_id }}">
+                        <button type="submit" class="btn btn-sm btn-danger mt-2">Delete</button>
+                    </form>
+                    <!-- Display material comments -->
+                    <div class="comments-section" id="commentsSection{{ post.id }}" style="display:none;">
+                        <!-- Iterate through comments data and display comments related to the current material -->
+                        {% for comment in material_comments_data %}
+                            {% if comment.material_id == post.id %}
+                                <div class="comment mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                                        <div>
+                                            {% if comment.student_email %}
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Icon or any other element goes here -->
+                                                    <p class="card-text text-muted">{{ comment.student_first_name }} {{ comment.student_last_name }}</p>
+                                                </div>
+                                                <p class="card-text text-muted small">{{ comment.create_date }}</p>
+                                            {% elif comment.instructor_email %}
+                                                <div class="d-flex align-items-center">
+                                                    <!-- Icon or any other element goes here -->
+                                                    <p class="card-text text-muted">{{ comment.instructor_first_name }} {{ comment.instructor_last_name }}</p>
+                                                </div>
+                                                <p class="card-text text-muted small">{{ comment.create_date }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <!-- Dropdown for comment options -->
+                                        {% if user_role == 'instructor' %}
+                                        <div class="ml-auto">
+                                            <div class="content_dropdown">
+                                                <div class="edit-comment-wrapper">
+                                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="commentDropdown{{ comment.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="fa fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu" aria-labelledby="commentDropdown{{ comment.id }}">
+                                                        <a class="dropdown-item edit-comment" href="#" data-comment-id="{{ comment.id }}">Edit</a>
+                                                        <a class="dropdown-item delete-comment" href="#" data-comment-id="{{ comment.id }}" data-class-id="{{ post.class_id }}">Delete</a>
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                        </div>
+                                        {% endif %}
+                                        </div>
+                                    <div class="comment-text ml-5">
+                                        <p class="card-text">{{ comment.comment | safe }}</p>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>                   
+        {% elif post.type == 'image' %}
+            <div class="image-panel">
+                <div class="image">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                        <div>
+                            <div class="d-flex align-items-center">
+                                <!-- Icon or any other element goes here -->
+                                <p class="card-text text-muted">{{ post.first_name }} {{ post.last_name }}</p>
+                            </div>
+                            <p class="card-text text-muted small">{{ post.create_date }}</p> <!-- Date added below the name with smaller text -->
+                        </div>   
+                        <!-- Dropdown menu for image options -->
+                        {% if user_role == 'instructor' %}
+                        <div class="ml-auto">
+                            <div class="content_dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="imageDropdown{{ post.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="imageDropdown{{ post.id }}">
+                                    <a class="dropdown-item edit-image" href="#" data-image-id="{{ post.id }}">Edit</a>
+                                    <a class="dropdown-item delete-image" href="#" data-image-id="{{ post.id }}">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="description" style="margin-left: 40px;">{{ post.description }}</p>
+                    <div class="d-flex align-items-center">
+                        <div style="flex: 0 0 auto; max-width: 50%;">
+                            <img src="{{ url_for('serve_uploaded_file', filename='class_' + post.class_id|string + '/' + post.filename) }}" class="card-img-top ml-5" alt="Uploaded Image" onclick="showFullscreen('{{ post.filename }}')" style="width: 100%; height: auto;">
+                            <h5 class="card-title ml-5">{{ post.filename }}</h5>
+                        </div>
+                    </div>
+                    
+                    <!-- Add form for editing image filename -->
+                    <form method="POST" action="{{ url_for('edit_image', image_id=post.id) }}" class="edit-image-form" style="display: none;">
+                        <div class="form-group">
+                            <input type="hidden" name="class_id" value="{{ post.class_id }}">
+                            <input type="text" name="new_filename" class="form-control" placeholder="New Filename"> 
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2">Save</button>
+                    </form>
+                    <!-- Add form for deleting image -->
+                    <form method="POST" action="{{ url_for('delete_image', image_id=post.id) }}" class="delete-image-form" style="display: none;">
+                        <input type="hidden" name="class_id" value="{{ post.class_id }}">
+                        <button type="submit" class="btn btn-sm btn-danger mt-2">Delete</button>
+                    </form>
+                    <hr>
+                   <!-- Form for posting comments on images -->
+                    <form id="postImageCommentForm{{ post.id }}" method="POST" action="{{ url_for('post_image_comment', image_id=post.id) }}">
+                        <input type="hidden" name="class_id" value="{{ class_data.id }}">
+                        <div class="input-group">
+                            <textarea name="comment" class="form-control" placeholder="Write a comment" onclick="toggleCommentsImage(this, '{{ post.id }}')"></textarea> <!-- Pass the image_id to toggleComments function -->
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                    <br>
+                    <!-- Display image comments (initially hidden) with unique identifier -->
+                    <div id="imageCommentsSection{{ post.id }}" class="comments-section" style="display: none;">
+                        <!-- Iterate through comments data and display comments related to the current image -->
+                        {% for comment in image_comments_data %}
+                            {% if comment.image_id == post.id %}
+                                <div class="comment mb-3">
+                                <div class="d-flex align-items-center mb-2">
+                                    <img src="{{ url_for('static', filename='images/userperson.png') }}" class="ulogo">
+                                    <div>
+                                        {% if comment.student_email %}
+                                            <div class="d-flex align-items-center">
+                                                <!-- Icon or any other element goes here -->
+                                                <p class="card-text text-muted">{{ comment.student_first_name }} {{ comment.student_last_name }}</p>
+                                            </div>
+                                            <p class="card-text text-muted small">{{ comment.create_date }}</p> <!-- Date added below the student's name with smaller text -->
+                                        {% elif comment.instructor_email %}
+                                            <div class="d-flex align-items-center">
+                                                <!-- Icon or any other element goes here -->
+                                                <p class="card-text text-muted">{{ comment.instructor_first_name }} {{ comment.instructor_last_name }}</p>
+                                            </div>
+                                            <p class="card-text text-muted small">{{ comment.create_date }}</p> <!-- Date added below the instructor's name with smaller text -->
+                                        {% endif %}
+                                    </div>
+                                    <!-- Dropdown for comment options -->
+                                    {% if user_role == 'instructor' %}
+                                        <div class="ml-auto">
+                                            <div class="content_dropdown">
+                                                <button class="btn btn-secondary dropdown-toggle" type="button" id="commentDropdown{{ comment.id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </button>
+                                                <div class="dropdown-menu" aria-labelledby="commentDropdown{{ comment.id }}">
+                                                    <a class="dropdown-item edit-comment" href="#" data-comment-id="{{ comment.id }}">Edit</a>
+                                                    <a class="dropdown-item delete-comment" href="#" data-comment-id="{{ comment.id }}" data-class-id="{{ class_data.id }}">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="comment-text ml-5">
+                                    <p class="card-text">{{ comment.comment | safe }}</p>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>
+</div>
+    <!-- Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
+  <!-- Add Material Modal -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" role="dialog" aria-labelledby="addMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMaterialModalLabel">Add Material</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('add_material') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}"> <!-- Include class_id as a hidden input field -->
+                    <div class="form-group">
+                        <label for="materialName">Material Name</label>
+                        <input type="text" class="form-control" id="materialName" name="name" style="border: 1px solid #ccc; border-radius: 10px; padding: 20px;" placeholder="Enter Material Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialDescription">Description</label>
+                        <textarea name="description" class="form-control" id="editor" placeholder="Description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="materialFile">Choose File</label>
+                        <input type="file" class="form-control-file" id="materialFile" name="file[]" required multiple>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Upload Image Modal -->
+<div class="modal fade" id="uploadImageModal" tabindex="-1" role="dialog" aria-labelledby="uploadImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadImageModalLabel">Upload Image</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data">
+                    <!-- Add hidden input field for class_id -->
+                    <input type="hidden" name="class_id" value="{{ class_data.id }}">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter Description"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="imageFile">Choose Image</label>
+                        <input type="file" class="form-control-file" id="imageFile" name="image" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script>
+    <script>
+        // Function to initialize CKEditor for a given ID
+        function initializeCKEditor(id) {
+            CKEDITOR.replace(id);
+        }
+
+        // Call initializeCKEditor function for each textarea
+        initializeCKEditor('editor');
+        initializeCKEditor('quizEditor');
+        initializeCKEditor('assignmentEditor');
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("myTextarea").addEventListener("focus", function() {
+                CKEDITOR.replace('myTextarea');
+            });
+        });
+    </script>
+       <script>
+        function redirectToMaterial(materialId) {
+            var materialLink = document.getElementById("materialLink" + materialId);
+            if (materialLink) {
+                materialLink.click();
+            }
+        }
+    </script>
+    <script>
+        function showFullscreen(filename) {
+            var imageUrl = "{{ url_for('static', filename='uploads/') }}" + filename;
+            var modal = document.getElementById("imageModal");
+            var modalImg = document.getElementById("modalImage");
+            modal.style.display = "block";
+            modalImg.src = imageUrl;
+            // Enter fullscreen mode
+            if (modal.requestFullscreen) {
+                modal.requestFullscreen();
+            } else if (modal.webkitRequestFullscreen) {
+                modal.webkitRequestFullscreen();
+            } else if (modal.mozRequestFullScreen) {
+                modal.mozRequestFullScreen();
+            } else if (modal.msRequestFullscreen) {
+                modal.msRequestFullscreen();
+            }
+            // Add event listener for "Escape" key press
+            document.addEventListener("keydown", handleEscapeKey);
+        }
+        function closeModal() {
+            var modal = document.getElementById("imageModal");
+            modal.style.display = "none";
+
+            // Exit fullscreen mode
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+
+            // Remove event listener for "Escape" key press
+            document.removeEventListener("keydown", handleEscapeKey);
+        }
+        function handleEscapeKey(event) {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        }
+    </script>
+    <script>
+        // jQuery script to toggle dropdown menu visibility
+        $(document).ready(function(){
+            // Add click event listener to all three dots icons
+            $('.dropdown-toggle').click(function(){
+                // Toggle visibility of the dropdown menu
+                $(this).next('.dropdown-menu').toggle();
+            });
+        });
+    </script>
+    <script>
+        // Prevent default behavior and stop event propagation when clicking on the dropdown menu for editing materials
+        document.querySelectorAll(".edit-material").forEach(function(editMaterialLink) {
+            editMaterialLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                var materialId = this.getAttribute("data-material-id");
+                // Add logic to handle editing materials
+            });
+        });
+    </script>
+    <script>
+        // Add event listeners for comment and reply dropdowns
+        document.addEventListener("DOMContentLoaded", function() {
+            // Comment dropdowns
+            document.querySelectorAll(".comment-options .dropdown-toggle").forEach(function(toggle) {
+                toggle.addEventListener("click", function() {
+                    var dropdown = this.nextElementSibling;
+                    dropdown.classList.toggle("show");
+                });
+            });
+            // Reply dropdowns
+            document.querySelectorAll(".reply-options .dropdown-toggle").forEach(function(toggle) {
+                toggle.addEventListener("click", function() {
+                    var dropdown = this.nextElementSibling;
+                    dropdown.classList.toggle("show");
+                });
+            });
+            // Close dropdowns when clicking outside
+            window.onclick = function(event) {
+                if (!event.target.matches('.dropdown-toggle')) {
+                    var dropdowns = document.getElementsByClassName("dropdown-menu");
+                    for (var i = 0; i < dropdowns.length; i++) {
+                        var openDropdown = dropdowns[i];
+                        if (openDropdown.classList.contains('show')) {
+                            openDropdown.classList.remove('show');
+                        }
+                    }
+                }
+            };
+        });
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Add event listeners for editing comments
+        document.querySelectorAll(".edit-comment").forEach(function(editLink) {
+            editLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                var commentId = this.getAttribute("data-comment-id");
+                var commentText = this.closest(".comment-content").querySelector(".comment-text");
+                var editTextarea = this.closest(".comment-content").querySelector(".edit-comment-textarea");
+                var saveButton = this.closest(".comment-content").querySelector(".save-comment");
+                var classId = this.getAttribute("data-class-id"); // Add this line to get class_id
+                // Toggle display of elements
+                commentText.style.display = "none";
+                editTextarea.style.display = "block";
+                saveButton.style.display = "block";
+                // Add class_id to the save button's data attribute
+                saveButton.setAttribute("data-class-id", classId);
+            });
+        });
+        // Add event listener for saving edited comments
+        document.querySelectorAll(".save-comment").forEach(function(saveButton) {
+            saveButton.addEventListener("click", function(event) {
+                var commentId = this.closest(".comment-content").querySelector(".edit-comment").getAttribute("data-comment-id");
+                var editedComment = this.closest(".comment-content").querySelector(".edit-comment-textarea").value;
+                var classId = this.getAttribute("data-class-id"); // Retrieve class_id from data attribute
+                // Send an AJAX request to the server to save the edited comment
+                fetch("/edit_comment/" + commentId, {
+                    method: "POST",
+                    body: new URLSearchParams({ comment_content: editedComment, class_id: classId }), // Include class_id in the body
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Reload the page after successful edit
+                    } else {
+                        throw new Error("Failed to edit comment");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            });
+        });
+    });
+    </script>
+    <script>
+    // Add event listeners for deleting comments
+    document.querySelectorAll(".delete-comment").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var commentId = this.getAttribute("data-comment-id");
+            var classId = this.getAttribute("data-class-id"); 
+            // Send an AJAX request to delete the comment
+            fetch("/delete_comment/" + commentId, {
+                method: "POST",
+                body: new URLSearchParams({ class_id: classId }), // Include class_id in the body
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Reload the page after successful delete
+                } else {
+                    throw new Error("Failed to delete comment");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        });
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+    // Add event listener to reply textareas
+    document.querySelectorAll(".reply-textarea").forEach(function(textarea) {
+        textarea.addEventListener("click", function(event) {
+            // Toggle the display of replies container
+            var repliesContainer = this.closest(".comment-panel").querySelector(".replies-container");
+            if (repliesContainer.style.display === "none") {
+                repliesContainer.style.display = "block";
+            } else {
+                repliesContainer.style.display = "none";
+            }
+        });
+    });
+});
+
+    </script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Add event listener for clicking on material panels
+    document.querySelectorAll(".material-panel").forEach(function(materialPanel) {
+        // Add event listener for clicking on the material name
+        materialPanel.querySelector(".material-name").addEventListener("click", function(event) {
+            // Prevent the default action of the click event
+            event.preventDefault();
+            // Retrieve the material ID
+            var materialId = this.getAttribute("data-material-id");
+            // Open the material
+            openMaterial(materialId);
+        });
+
+        // Add event listener for clicking beside the material name
+        materialPanel.addEventListener("click", function(event) {
+            // Check if the clicked element is beside the material name
+            if (!event.target.classList.contains("material-name")) {
+                // Retrieve the material ID
+                var materialId = this.querySelector(".material-name").getAttribute("data-material-id");
+                // Open the material
+                openMaterial(materialId);
+            }
+        });
+    });
+
+    // Prevent routing when clicking on the comment form
+    document.querySelectorAll(".comment-form-wrapper").forEach(function(commentForm) {
+        commentForm.addEventListener("click", function(event) {
+            event.stopPropagation(); // Prevent the event from bubbling up
+        });
+    });
+
+    // Add event listeners for editing and deleting materials
+    document.querySelectorAll(".edit-material").forEach(function(editLink) {
+        editLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var materialId = this.getAttribute("data-material-id");
+            // Redirect to the edit material route
+            window.location.href = "/edit_material/" + materialId;
+        });
+    });
+
+    // Add event listener for deleting materials
+    document.querySelectorAll(".delete-material").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var materialId = this.getAttribute("data-material-id");
+            var classId = this.getAttribute("data-class-id"); // Get class ID
+            // Send AJAX request to delete the material
+            fetch("/delete_material/" + materialId + "?class_id=" + classId, { // Pass class ID in query parameter
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload the page after successful deletion
+                    window.location.reload();
+                } else {
+                    throw new Error("Failed to delete material");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        });
+    });
+
+    // Add event listener to prevent dropdown from routing
+    document.querySelectorAll(".dropdown-toggle").forEach(function(dropdownToggle) {
+        dropdownToggle.addEventListener("click", function(event) {
+            event.stopPropagation(); // Prevent the event from bubbling up
+        });
+    });
+});
+
+// Function to open material when clicked
+function openMaterial(materialId) {
+    // Redirect to the material detail page or any specific action you want
+    window.location.href = "/material/" + materialId;
+}
+</script>    
+    <script>
+    // Add event listeners for comment and reply dropdowns
+    document.addEventListener("DOMContentLoaded", function() {
+        // Comment dropdowns
+        document.querySelectorAll(".comment-options .dropdown-toggle").forEach(function(toggle) {
+            toggle.addEventListener("click", function() {
+                var dropdown = this.nextElementSibling;
+                dropdown.classList.toggle("show");
+            });
+        });
+    
+        // Reply dropdowns
+        document.querySelectorAll(".reply-options .dropdown-toggle").forEach(function(toggle) {
+            toggle.addEventListener("click", function() {
+                var dropdown = this.nextElementSibling;
+                dropdown.classList.toggle("show");
+            });
+        });
+    
+        // Close dropdowns when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropdown-toggle')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        };
+    });
+    </script>
+ <script>  
+    document.addEventListener("DOMContentLoaded", function() {
+        // Add event listeners for editing replies
+        document.querySelectorAll(".edit-reply").forEach(function(editLink) {
+            editLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                var replyId = this.getAttribute("data-reply-id");
+                var classId = this.getAttribute("data-class-id"); // Get the class ID
+                var replyText = this.closest(".reply").querySelector(".card-text");
+                var editTextarea = this.closest(".reply").querySelector(".edit-reply-textarea");
+                var saveButton = this.closest(".reply").querySelector(".save-reply");
+                // Toggle display of elements
+                replyText.style.display = "none";
+                editTextarea.style.display = "block";
+                saveButton.style.display = "block";
+                // Set data attributes for save button
+                saveButton.setAttribute("data-reply-id", replyId);
+                saveButton.setAttribute("data-class-id", classId);
+            });
+        });
+    
+        // Add event listener for saving edited replies
+        document.querySelectorAll(".save-reply").forEach(function(saveButton) {
+            saveButton.addEventListener("click", function(event) {
+                var replyId = this.getAttribute("data-reply-id");
+                var classId = this.getAttribute("data-class-id");
+                var editedReply = this.closest(".reply").querySelector(".edit-reply-textarea").value;
+                // Send an AJAX request to the server to save the edited reply
+                fetch("/edit_reply/" + replyId, {
+                    method: "POST",
+                    body: new URLSearchParams({ reply_content: editedReply, class_id: classId }),
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Reload the page after successful edit
+                    } else {
+                        throw new Error("Failed to edit reply");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            });
+        });
+    
+      // Add event listener for delete reply option
+document.querySelectorAll(".delete-reply").forEach(function(deleteLink) {
+    deleteLink.addEventListener("click", function(event) {
+        event.preventDefault();
+        var replyId = this.getAttribute("data-reply-id");
+        var classId = this.getAttribute("data-class-id"); // Get the class ID
+        var replyElement = this.closest(".reply"); // Get the reply element
+        // Remove the reply element from the DOM immediately
+        replyElement.remove();
+        // Send an AJAX request to delete the reply
+        fetch("/delete_reply/" + replyId, {
+            method: "POST",
+            body: JSON.stringify({ class_id: classId }), // Include the class ID in the request body
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                // Redirect to class_content with class_id parameter
+                window.location.href = "/class_content/" + classId;
+            } else {
+                throw new Error("Failed to delete reply");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    });
+});
+
+
+    });
+</script>    
+
+
+
+<script>
+   // Add event listeners for editing and deleting materials
+   document.querySelectorAll(".edit-image").forEach(function(editLink) {
+        editLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var imageId = this.getAttribute("data-image-id");
+            // Redirect to the edit material route
+            window.location.href = "/edit_image/" + imageId;
+        });
+    });
+
+    document.querySelectorAll(".delete-image").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var imageId = this.getAttribute("data-image-id");
+            var classIdInput = this.closest('.image-panel').querySelector('input[name="class_id"]');
+            var classId = classIdInput ? classIdInput.value : null;
+            if (classId !== null) {
+                // Send AJAX request to delete the image
+                fetch("/delete_image/" + imageId + "?class_id=" + classId, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Reload the page after successful deletion
+                        window.location.reload();
+                    } else {
+                        throw new Error("Failed to delete image");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error deleting image:", error);
+                });
+            } else {
+                console.error("Class ID not found");
+            }
+        });
+    });
+
+
+</script>
+<script>
+    function toggleCommentsImage(textarea, imageId) {
+        var commentsSection = document.getElementById('imageCommentsSection' + imageId);
+        // Toggle the visibility of the comments section associated with the clicked textarea
+        if (commentsSection.style.display === 'none' || commentsSection.style.display === '') {
+            commentsSection.style.display = 'block';
+        } else {
+            commentsSection.style.display = 'none';
+        }
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Add event listeners for editing image comments
+        document.querySelectorAll(".edit-comment").forEach(function(editLink) {
+            editLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                var commentId = this.getAttribute("data-comment-id");
+                var commentText = this.closest(".comment").querySelector(".comment-text");
+                var editTextarea = document.createElement("textarea");
+                var saveButton = document.createElement("button");
+                editTextarea.className = "edit-comment-textarea form-control";
+                editTextarea.value = commentText.textContent.trim();
+                commentText.textContent = ""; // Clear existing text
+                commentText.appendChild(editTextarea);
+                saveButton.textContent = "Save";
+                saveButton.className = "save-comment btn btn-sm btn-primary";
+                commentText.appendChild(saveButton);
+            });
+        });
+    
+        // Add event listener for saving edited image comments
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("save-comment")) {
+                var commentId = event.target.closest(".comment").querySelector(".edit-comment").getAttribute("data-comment-id");
+                var editedComment = event.target.previousSibling.value;
+                // Send an AJAX request to the server to save the edited comment
+                fetch("/edit_image_comment/" + commentId, {
+                    method: "POST",
+                    body: JSON.stringify({ edited_comment: editedComment }),
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Reload the page after successful edit
+                    } else {
+                        throw new Error("Failed to edit comment");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            }
+        });
+    
+        // Add event listener for deleting image comments
+        document.querySelectorAll(".delete-comment").forEach(function(deleteLink) {
+            deleteLink.addEventListener("click", function(event) {
+                event.preventDefault();
+                var commentId = this.getAttribute("data-comment-id");
+                var classId = this.getAttribute("data-class-id"); // Get the class ID
+                var commentElement = this.closest(".comment"); // Get the comment element
+                // Remove the comment element from the DOM immediately
+                commentElement.remove();
+                // Send an AJAX request to delete the comment
+                fetch("/delete_image_comment/" + commentId, {
+                    method: "POST",
+                    body: JSON.stringify({ class_id: classId }), // Include the class ID in the request body
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // If the deletion fails, log an error
+                        console.error("Failed to delete comment");
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            });
+        });
+    });
+    </script>
+<script>
+    function toggleCommentsMaterial(postId) {
+        var commentsSection = document.getElementById("commentsSection" + postId);
+        if (commentsSection.style.display === "none") {
+            commentsSection.style.display = "block";
+        } else {
+            commentsSection.style.display = "none";
+        }
+    }
+</script>
+<script>
+   document.addEventListener("DOMContentLoaded", function() {
+    // Add event listeners for editing material comments
+    document.querySelectorAll(".edit-comment").forEach(function(editLink) {
+        editLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var commentId = this.getAttribute("data-comment-id");
+            var classId = this.getAttribute("data-class-id"); // Get the class ID
+            var commentText = this.closest(".comment").querySelector(".card-text");
+            var editTextarea = this.closest(".comment").querySelector(".edit-comment-textarea");
+            var saveButton = this.closest(".comment").querySelector(".save-comment");
+            // Toggle display of elements
+            commentText.style.display = "none";
+            editTextarea.style.display = "block";
+            saveButton.style.display = "block";
+            // Set data attributes for save button
+            saveButton.setAttribute("data-comment-id", commentId);
+            saveButton.setAttribute("data-class-id", classId);
+        });
+    });
+
+    // Add event listener for saving edited material comments
+    document.addEventListener("click", function(event) {
+        if (event.target.classList.contains("save-comment")) {
+            var commentId = event.target.getAttribute("data-comment-id");
+            var editedComment = event.target.parentNode.querySelector(".edit-comment-textarea").value;
+            // Send an AJAX request to the server to save the edited comment
+            fetch("/edit_material_comment/" + commentId, {
+                method: "POST",
+                body: JSON.stringify({ edited_comment: editedComment }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Reload only the comment section after successful edit
+                    var classId = event.target.getAttribute("data-class-id");
+                    fetch("/class_content/" + classId)
+                        .then(response => response.text())
+                        .then(data => {
+                            document.querySelector(".comment-section").innerHTML = data;
+                        });
+                } else {
+                    throw new Error("Failed to edit comment");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+    });
+
+    // Add event listener for deleting material comments
+    document.querySelectorAll(".delete-comment").forEach(function(deleteLink) {
+        deleteLink.addEventListener("click", function(event) {
+            event.preventDefault();
+            var commentId = this.getAttribute("data-comment-id");
+            var classId = this.getAttribute("data-class-id"); // Get the class ID
+            var commentElement = this.closest(".comment"); // Get the comment element
+            // Send an AJAX request to delete the comment
+            fetch("/delete_material_comment/" + commentId, {
+                method: "POST",
+                body: JSON.stringify({ class_id: classId }), // Include the class ID in the request body
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the comment element from the DOM after successful deletion
+                    commentElement.remove();
+                } else {
+                    // If the deletion fails, log an error
+                    console.error("Failed to delete comment");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        });
+    });
+});
+
+</script>
+
+<script>    
+// Prevent default behavior and stop event propagation when clicking on the dropdown menu for editing comments
+document.querySelectorAll(".edit-comment-wrapper .dropdown-toggle").forEach(function(dropdownToggle) {
+    dropdownToggle.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+});
+
+// Prevent default behavior and stop event propagation when clicking on the dropdown menu for editing comments
+document.querySelectorAll(".edit-comment ").forEach(function(dropdownToggle) {
+    dropdownToggle.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+});
+// Prevent default behavior and stop event propagation when clicking on textarea for editing comments
+document.querySelectorAll(".edit-comment-wrapper .edit-comment").forEach(function(editCommentLink) {
+    editCommentLink.addEventListener("click", function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        var commentId = this.getAttribute("data-comment-id");
+        var classId = this.getAttribute("data-class-id"); // Get the class ID
+        var commentText = this.closest(".comment").querySelector(".card-text");
+        var editTextarea = this.closest(".comment").querySelector(".edit-comment-textarea");
+        var saveButton = this.closest(".comment").querySelector(".save-comment");
+        // Toggle display of elements
+        commentText.style.display = "none";
+        editTextarea.style.display = "block";
+        saveButton.style.display = "block";
+        // Set data attributes for save button
+        saveButton.setAttribute("data-comment-id", commentId);
+        saveButton.setAttribute("data-class-id", classId);
+    });
+});
+</script>
+{% endblock %}

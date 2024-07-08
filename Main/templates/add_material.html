@@ -1,0 +1,25 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+{% include 'includes/_classnav.html '%}
+<div class="container">
+    <!-- Add Material Form -->
+    <div id="addMaterialForm">
+        <h2>Add Material</h2>
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="post" enctype="multipart/form-data">
+            <!-- Add hidden input field for class_id -->
+            <input type="hidden" name="class_id" value="{{ class_id }}">
+            <div class="form-group">
+                {{ form.name.label }} {{ form.name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.description.label }} {{ form.description(class="form-control", id="editor") }}
+            </div>
+            <div class="form-group">
+                <input type="file" name="file[]" multiple>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <title>Quiz Maker</title>
+
+    <style>
+        /* Add the CSS styles here */
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        center {
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        i {
+            font-style: italic;
+            color: #888;
+        }
+
+        /* CSS styles for form blocks */
+        .form-block {
+            background-color: #ffffff;
+            border: 0.5px solid #e2e2e2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-block label {
+            font-size: 16px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-block input[type="text"],
+        .form-block input[type="radio"] {
+            font-size: 16px;
+            padding: 10px;
+            border: 0.5px solid #e2e2e2;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            width: 100%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Additional styles for radio buttons */
+        .radio-block {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .radio-block input[type="radio"] {
+            display: none;
+        }
+
+        .radio-block label {
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .radio-block label::before {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .radio-block input[type="radio"]:checked + label::before {
+            background-color: #06BBCC;
+            border-color: #06BBCC;
+        }
+
+        /* Style for the button */
+        button {
+            background-color: #ffffff;
+            color: #06BBCC;
+            border: none;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            border: 0.5px solid #e2e2e2;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Adding shadow background */
+            font-weight: bold;
+            border-radius: 20px;
+            height: 40px;
+        }
+
+        button:hover {
+            background-color: #e2e2e2;
+            color: #06BBCC;
+        }
+
+        /* Rest of your styles */
+        #quizContainer {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        /* Spinner styles */
+        .spinner-container {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #06BBCC;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spinner 0.8s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #checkScoreBtn {
+            display: none;
+        }
+
+        #scoreContainer {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center>
+            <h1>Quiz Generator</h1>
+            <h2>AI-powered</h2>
+            <i>Ask Bluebot to generate a quiz!</i>
+            <form id="quizForm">
+                <div class="form-block">
+                    <label for="topic">Topic</label>
+                    <input type="text" id="topic" name="topic" placeholder="Write any topic" required>
+                </div>
+
+                <div class="form-block">
+                    <label>How difficult should the quiz be?</label>
+                    <div class="radio-block">
+                        <input type="radio" id="easy" name="question_difficulty" value="easy">
+                        <label for="easy">Easy</label>
+                    </div>
+                    <div class="radio-block">
+                        <input type="radio" id="average" name="question_difficulty" value="average">
+                        <label for="average">Average</label>
+                    </div>
+                    <div class="radio-block">
+                        <input type="radio" id="hard" name="question_difficulty" value="hard">
+                        <label for="hard">Hard</label>
+                    </div>
+                </div>
+
+                <div class="form-block">
+                    <label>What tone should the quiz be?</label>
+                    <div class="radio-block">
+                        <input type="radio" id="casual" name="tone" value="casual">
+                        <label for="casual">Casual</label>
+                    </div>
+                    <div class="radio-block">
+                        <input type="radio" id="professional" name="tone" value="professional">
+                        <label for="professional">Professional</label>
+                    </div>
+                    <div class="radio-block">
+                        <input type="radio" id="academic" name="tone" value="academic">
+                        <label for="academic">Academic</label>
+                    </div>
+                </div>
+
+                <div class="form-block">
+                    <label for="userPrompt">User Prompt:</label>
+                    <input type="text" id="userPrompt" name="userPrompt" placeholder="Write any user prompt" required>
+                </div>
+
+                <button type="button" onclick="generateQuiz()">Generate Quiz!</button>
+            </form>
+
+        </center>
+    </div>
+    <script>
+        function generateQuiz() {
+            var formData = {
+                'question_difficulty': document.querySelector('input[name="question_difficulty"]:checked').value,
+                'tone': document.querySelector('input[name="tone"]:checked').value,
+                'user_prompt': document.getElementById('userPrompt').value
+            };
+    
+            fetch('/generate_quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                var quizContainer = document.getElementById('quizContainer');
+                quizContainer.innerHTML = data.quiz_text;
+    
+                // Check if quiz generation is successful
+                if (data.quiz_text) {
+                    alert("Quiz generated successfully!");
+                }
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+        }
+    </script>
+    
+
+</body>
+</html>
+
+{% endblock %}

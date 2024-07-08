@@ -1,0 +1,118 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank of Questions</title>
+    <style>
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .question-block {
+            background-color: #ffffff;
+            border: 0.5px solid #e2e2e2;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .question-header {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .question-date {
+            font-size: 14px;
+            color: #555;
+        }
+        .output-line {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 5px;
+        }
+        .edit-button, .delete-button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .edit-button {
+            background-color: #06BBCC;
+            color: white;
+        }
+        .delete-button {
+            background-color: #CC0606;
+            color: white;
+        }
+    </style>
+    <script>
+        function editQuizQuestion(questionId) {
+            const newOutput = prompt("Edit the question output:");
+            if (newOutput) {
+                fetch(`/edit_quiz_question/${questionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({output: newOutput}),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Failed to update the question.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function deleteQuizQuestion(questionId) {
+            if (confirm("Are you sure you want to delete this question?")) {
+                fetch(`/delete_quiz_question/${questionId}`, {
+                    method: 'POST',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Failed to delete the question.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Bank of Questions</h1>
+        {% for question in questions %}
+        <div class="question-block">
+            <div class="question-header">
+                Instructor: {{ question.instructor_name }}
+            </div>
+            <div class="question-date">
+                Date: {{ question.date }}
+            </div>
+            {% for line in question.output_lines %}
+            <div class="output-line">{{ line }}</div>
+            {% endfor %}
+            <button class="edit-button" onclick="editQuizQuestion('{{ question.id }}')">Edit</button>
+            <button class="delete-button" onclick="deleteQuizQuestion('{{ question.id }}')">Delete</button>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
+{% endblock %}

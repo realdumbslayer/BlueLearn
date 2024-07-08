@@ -1,0 +1,14 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+   {% if topic %}
+       <h1>{{ topic.name }}</h1>
+   {% else %}
+       <p class="text-danger">No topic found.</p>
+   {% endif %}
+{% endblock %}
+
+
+
+
+

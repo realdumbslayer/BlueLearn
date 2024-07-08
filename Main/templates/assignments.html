@@ -1,0 +1,26 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+{% include 'includes/_classnav.html '%}
+
+<div class="container">
+   <h2>Assignments</h2>
+   {% for assignment in assignments %}
+   <div class="material-panel">
+       <a href="{{ url_for('assignment', id=assignment.id) }}" style="display: none;" id="assignment{{ assignment.id }}"></a>
+       <div class="material-content" onclick="redirectToMaterial('{{ assignment.id }}')">
+           <span class="assignment fa fa-file"></span>
+           {{ assignment.name }}
+       </div>
+   </div>
+   {% endfor %}
+</div>
+
+<script>
+   function redirectToAssignment(assignmentId) {
+       var assignment = document.getElementById('assignmentLink' + assignmentId);
+       assignmentLink.click();
+   }
+</script>
+
+{% endblock %}

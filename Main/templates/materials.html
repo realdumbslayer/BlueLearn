@@ -1,0 +1,26 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+{% include 'includes/_classnav.html '%}
+
+<div class="container">
+   <h2>Materials</h2>
+   {% for material in materials %}
+   <div class="material-panel">
+       <a href="{{ url_for('material', id=material.id) }}" style="display: none;" id="materialLink{{ material.id }}"></a>
+       <div class="material-content" onclick="redirectToMaterial('{{ material.id }}')">
+           <span class="material-icon fa fa-file"></span>
+           {{ material.name }}
+       </div>
+   </div>
+   {% endfor %}
+</div>
+
+<script>
+   function redirectToMaterial(materialId) {
+       var materialLink = document.getElementById('materialLink' + materialId);
+       materialLink.click();
+   }
+</script>
+
+{% endblock %}

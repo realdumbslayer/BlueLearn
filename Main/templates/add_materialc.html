@@ -1,0 +1,30 @@
+<div class="container">
+    <!-- Add Material Form -->
+    <div id="addMaterialCForm">
+        <h2>Add Material</h2>
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="post" enctype="multipart/form-data">
+            <!-- Add hidden input field for class_id -->
+            <input type="hidden" name="class_id" value="{{ class_id }}">
+            <div class="form-group">
+                {{ form.name.label }} {{ form.name(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.description.label }} {{ form.description(class="form-control", id="editor") }}
+            </div>
+            <div class="form-group">
+                <label for="topic">Select Topic:</label>
+                <select class="form-control" name="topic" id="topic">
+                    {% for topic in topics %}
+                        <option value="{{ topic.id }}">{{ topic.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="materialFile">Choose File</label>
+                <input type="file" class="form-control-file" id="materialFile" name="file" required>
+            </div>
+            <p><input class="btn btn-primary" type="submit" value="Submit"></p>
+        </form>
+    </div>
+</div>

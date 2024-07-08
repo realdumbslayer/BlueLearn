@@ -1,0 +1,40 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+{% include 'includes/_classnav.html '%}
+<link rel="stylesheet" href="static/css/fstyle.css" />
+    <div class="container">
+        <!-- Add Material Form -->
+        <div id="addAssignmentForm" >
+            <h2>Add Material</h2>
+            {% from "includes/_formhelpers.html" import render_field %}
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="class_id" value="{{ class_id }}">
+                <div class="form-group">
+                    {{ form.name.label }} {{ form.name(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.description.label }} {{ form.description(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.score.label }} {{ form.score(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.due_date.label }} {{ form.due_date(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    <label for="topic">Select Topic:</label>
+                    <select class="form-control" name="topic" id="topic">
+                        {% for topic in topics %}
+                            <option value="{{ topic.id }}">{{ topic.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="file">Upload File(s)</label>
+                    <input type="file" name="file[]" multiple>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

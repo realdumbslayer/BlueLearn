@@ -1,0 +1,19 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+{% include 'includes/_classnav.html '%}
+<link rel="stylesheet" href="static/css/fstyle.css" />
+    <div class="container">
+        <!-- Add question Form -->
+        <div id="addTopicForm" >
+            <h2>Add topic</h2>
+            {% from "includes/_formhelpers.html" import render_field %}
+            <form method="post" enctype="multipart/form-data">
+                <input type="hidden" name="class_id" value="{{ class_id }}">
+                <div class="form-group">
+                    {{ form.name.label }} {{ form.name(class="form-control") }}
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>  
+        </div>
+    </div>
+{% endblock %}

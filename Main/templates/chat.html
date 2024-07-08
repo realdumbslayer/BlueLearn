@@ -1,0 +1,63 @@
+{% extends 'includes/_chatbotsidebar.html' %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/chatbotstyle.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbotsidebar.css') }}">
+    <title>Bluebot</title>
+</head>
+<body>
+    <div class="container">
+        <!-- Chat Messages -->
+        <div id="chat-messages">
+            {% for message in chat_sessions %}
+                {% if message.sender == 'user' %}
+                    <p>User: {{ message.message }}</p>
+                {% else %}
+                    <p>Bot: {{ message.message|safe }}</p> <!-- Use the safe filter here -->
+                {% endif %}
+            {% endfor %}
+        </div>
+        <!-- Logo and Chatbot title -->
+        <div class="title-container">
+            <img src="/static/images/cuteblue.png" alt="Logo" class="logo">
+            <h1 style="font-size: 1.2rem;margin: 0;color: black;">Bluebot</h1>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <!-- Display existing conversation history -->
+            {% for message in session_history %}
+                <div class="message">
+                    <div class="d-flex align-items-center mb-2">
+                        {% if message.sender == 'user' %}
+                            <!-- Display user icon -->
+                            <img src="/static/images/ulogo2.png" class="ulogo" alt="User Icon">
+                        {% elif message.sender == 'bot' %}
+                            <!-- Display chatbot icon -->
+                            <img src="/static/images/cuteblue.png" class="logo" alt="Chatbot Icon">
+                        {% endif %}
+                    </div>
+                    <div class="message-text">{{ message.message|safe }}</div> <!-- Use the safe filter here -->
+                </div>
+            {% endfor %}
+        </div>
+        <div class="user-input-container">
+            <div class="input-with-send-btn">
+                <input type="text" class="user-input" id="user-input" placeholder="Message ChatBot" onkeydown="handleKeyDown(event)">
+                <input type="hidden" id="session_id" value="{{ session_id }}">
+                <input type="hidden" id="class_id" value="{{ class_id }}">
+                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+    <script src="/static/js/chatsessions.js"></script>
+</body>
+</html>
+{% endblock %}

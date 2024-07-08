@@ -1,0 +1,38 @@
+{% extends 'includes/_navbar.html' %}
+{% block body %}
+{% include 'includes/_classnav.html' %}
+<style>
+      .container1{
+        padding: 20px;
+        margin-left: 110px; 
+        margin-right: 200px; 
+        border: 1px solid #ccc;
+        border-radius: 10px;
+    }
+</style>
+<div class="container1">
+   {% if question %}
+       <h1>{{ question.name }}</h1>
+       <small>Added by {{ instructor_first_name }} {{ instructor_last_name }} on {{ question.create_date }}</small>
+       <hr>
+       <div>
+          {{ question.description | safe }}
+       </div>
+       <!-- Render the file related to the question if it exists -->
+       {% if question.file_path %}
+       <div class="card mb-3" style="max-width: 540px;">
+          <div class="row no-gutters">
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">{{ question.name }}</h5>
+                <p class="card-text">{{ question.file_type }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+   {% else %}
+       <p class="text-danger">No question found.</p>
+   {% endif %}
+  </div>
+{% endblock %}

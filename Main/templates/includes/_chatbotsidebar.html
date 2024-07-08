@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbotsidebar.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div class="wrapper d-flex align-items-stretch">
+    {% if session.logged_in %}
+    {% if session.role == 'instructor' %}
+    <nav id="sidebar">
+        <div class="sidebar">
+        <div class="custom-menu">
+            <button type="button" id="sidebarCollapse" class="btn btn-toggle">
+                <i class="fa fa-bars"></i>
+                <span class="sr-only">Toggle Menu</span>
+            </button>
+        </div>
+        <div class="p-4">
+            <h1 style="display: block; text-align: center;"><a href="/classes" class="logo">Home</a></h1>
+            <hr>
+            <a href="/chat"><button class="btn btn-primary btn-block">Welcome</button></a>
+                <!-- Button to start a new chat session -->
+                <button onclick="startNewChatSession()" class="btn btn-primary btn-block">
+                    <img src="/static/images/cuteblue.png" alt="Logo" class="logo">New Chat</button>   
+                <hr>            
+                 <!-- Placeholder for displaying active chat sessions -->
+                <ul id="active-chat-sessions" class="list-unstyled components mb-5">
+                    <!-- Dynamic content will be added here -->
+                </ul>
+            <div>    <!-- Button to delete chat session -->
+                <button class="btn btn-primary btn-block" onclick="deleteChatSession('{{ session_id }}')">Delete Chat Session</button>
+            </div>
+        </div>
+        <ul class="list-unstyled components mb-5">
+            <li>
+                <a href="/logout"><span class="fa fa-paper-plane mr-3"; style="margin-left:50px;"></span> Logout</a>
+            </li>
+        </ul>
+        </div>
+    </nav>
+    {% else %}
+    <!-- Student Navbar -->
+    <nav id="sidebar">
+        <div class="sidebar">
+        <div class="custom-menu">
+            <button type="button" id="sidebarCollapse" class="btn btn-toggle">
+                <i class="fa fa-bars"></i>
+                <span class="sr-only">Toggle Menu</span>
+            </button>
+        </div>
+        <div class="p-4">
+            <h1 style="display: block; text-align: center;"><a href="/enroll" class="logo">Home</a></h1>
+            <hr>
+                <!-- Button to start a new chat session -->
+                <button onclick="startNewChatSession()" class="btn btn-primary btn-block">
+                    <img src="/static/images/cuteblue.png" alt="Logo" class="logo">New Chat</button>               
+                 <!-- Placeholder for displaying active chat sessions -->
+                <ul id="active-chat-sessions" class="list-unstyled components mb-5">
+                    <!-- Dynamic content will be added here -->
+                </ul>
+            <div>    <!-- Button to delete chat session -->
+                <button class="btn btn-primary btn-block" onclick="deleteChatSession('{{ session_id }}')">Delete Chat Session</button>
+            </div>
+        </div>
+        <ul class="list-unstyled components mb-5">
+            <li>
+                <a href="/logout"><span class="fa fa-paper-plane mr-3"; style="margin-left:50px;"></span> Logout</a>
+            </li>
+        </ul>
+        </div>
+    </nav>
+    {% endif %}
+    {% endif %}
+
+    <!-- Page Content  -->
+
+    <div id="content" class="p-4 p-md-5 pt-5">
+        {% include 'includes/_messages.html' %}
+        {% block body %}{% endblock %}
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popper.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+<!-- Additional Scripts -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="//cdn.ckeditor.com/4.22.1/basic/ckeditor.js"></script>
+<script type="text/javascript">
+    CKEDITOR.replace('editor');
+</script>
+<script>
+    function startNewChatSession() {
+        fetch('/start_new_chat_session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from the server
+            if (data.success) {
+                // If the new chat session was successfully initiated,
+                // Update the sidebar to display the new session
+                addChatSessionToList(data.sessionId);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function addChatSessionToList(sessionId) {
+        // Create a new list item for the chat session
+        var listItem = document.createElement('li');
+        listItem.innerHTML = '<a href="#" onclick="joinChatSession(\'' + sessionId + '\')">Chat Session ' + sessionId + '</a>';
+
+        // Add the list item to the active chat sessions list
+        document.getElementById('active-chat-sessions').appendChild(listItem);
+    }
+    
+    function joinChatSession(sessionId) {
+    // Redirect the user to the chat page for the selected session
+    window.location.href = '/chat/' + sessionId; // Replace '/chat/' with the actual route for displaying chat sessions
+}
+
+        // Function to fetch existing chat sessions from the server
+        function fetchChatSessions() {
+        fetch('/get_chat_sessions', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from the server
+            if (data.success) {
+                // If successful, add each session to the sidebar
+                data.sessions.forEach(sessionId => {
+                    addChatSessionToList(sessionId);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Call the fetchChatSessions function when the page loads
+    window.onload = function() {
+        fetchChatSessions();
+    };
+</script>
+</body>
+</html>

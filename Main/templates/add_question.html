@@ -1,0 +1,58 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  .container {
+      padding: 20px;
+      margin-left: 50px; /* Adjust this value to shift the content more or less */
+      border: 1px solid #ccc; /* Add border to the textarea within the panel */
+      border-radius: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+{% include 'includes/_classnav.html' %}
+
+<div class="container">
+    <!-- Add question Form -->
+    <div id="addQuestionForm">
+        <h2>Add question</h2>
+        {% from "includes/_formhelpers.html" import render_field %}
+        <form method="POST" action="{{ url_for('add_question') }}" enctype="multipart/form-data">
+            <input type="hidden" name="class_id" value="{{ class_id }}">
+            <div class="form-group">
+                {{ render_field(form.name) }}
+            </div>
+            <div class="form-group">
+                {{ render_field(form.description) }}
+            </div>
+            <div class="form-group">
+                {{ render_field(form.score) }}
+            </div>
+            <div class="form-group">
+                {{ render_field(form.due_date) }}
+            </div>
+            <div class="form-group">
+                {{ render_field(form.duration) }}
+            </div>
+            <div class="form-group">
+                <label for="topic">Select Topic:</label>
+                <select class="form-control" name="topic" id="topic">
+                    {% for topic in topics %}
+                        <option value="{{ topic.id }}">{{ topic.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% else %}
+<p class="text-danger">No material found.</p>
+{% endif %}
+</div>
+{% endblock %}

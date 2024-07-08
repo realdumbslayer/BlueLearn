@@ -1,0 +1,34 @@
+{% extends 'includes/_navbar.html' %}
+
+{% block body %}
+  <h1>Edit Question</h1>
+  {% from "includes/_formhelpers.html" import render_field %}
+  <form method="POST" action="" enctype="multipart/form-data"> <!-- Add enctype="multipart/form-data" for file upload -->
+    <div class="form-group">
+      {{ render_field(form.name, class_="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ render_field(form.description, class_="form-control", id="editor") }} <!--id=editor is for CHECKEDITOR for add_material-->
+    </div>
+    <div class="form-group">
+      {{ render_field(form.score, class_="form-control") }} <!-- Include the score field -->
+    </div>
+    <div class="form-group">
+      {{ render_field(form.due_date, class_="form-control") }} <!-- Include the due_date field -->
+    </div>
+    <div class="form-group">
+      {{ render_field(form.duration, class_="form-control") }} <!-- Include the duration field -->
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      <button type="submit" class="btn btn-primary">Submit</button>
+      
+
+    </div>
+  </form>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fstyle.css') }}" />
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+ 
+  
+
+{% endblock %}

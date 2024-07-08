@@ -1,0 +1,85 @@
+{% extends 'includes/_chatbotsidebar.html' %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/chatbotstyle.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbotsidebar.css') }}">
+    <title>Bluebot</title>
+    <style>
+.line {
+  width: 0;
+  height: 4px;
+  background-color: #06BBCC;
+  animation: expandAndShrink 15s ease-in-out infinite;
+}
+
+@keyframes expandAndShrink {
+  0% {
+    width: 0;
+  }
+  50% {
+    width: 100%;
+  }
+  100% {
+    width: 0;
+  }
+}
+
+.color-change span {
+            display: inline-block;
+            animation: colorChange 8s ease-in-out infinite;
+        }
+
+        @keyframes colorChange {
+            0% {
+                color: #06BBCC;
+            }
+            50% {
+                color: black;
+            }
+            100% {
+                color: #06BBCC;
+            }
+        }
+        .wlogo {
+            width: 120px; /* Adjust as needed */
+            height: auto;
+            margin-right: 10px; /* Adjust spacing */
+            border-radius: 100px; /* Rounded corners */
+        }
+    </style>
+</head>
+<body>
+<main>
+    <div class="site-section">
+        <div class="container">
+            <center style="margin-top: 100px;">
+                <img src="static/images/cuteblue.png" alt="Logo" class="wlogo">
+                <h1 class="color-change"><span>B</span><span>l</span><span>u</span><span>e</span><span>b</span><span>o</span><span>t</span></h1>
+                <h2 style="color: black;">How can I help you today?</h2>
+                <h2 style="color: black;">Start a new session and ask away!</h2>
+                <div class="line"></div>
+            </center>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const spans = document.querySelectorAll('.color-change span');
+        spans.forEach((span, index) => {
+            span.style.animationDelay = `${index * 0.3}s`;
+        });
+    });
+</script>
+
+</body>
+</html>
+{% endblock %}

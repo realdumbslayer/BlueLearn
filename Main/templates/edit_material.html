@@ -1,0 +1,42 @@
+{% extends 'includes/_navbar.html' %}
+<head>
+  <style>
+    .container {
+        padding: 20px;
+        margin-left: 50px; /* Adjust this value to shift the content more or less */
+        border: 1px solid #ccc; /* Add border to the textarea within the panel */
+        border-radius: 10px;
+    }
+  </style>
+</head>
+{% block body %}
+<div class="container">
+  <h1>Edit Material</h1>
+  {% from "includes/_formhelpers.html" import render_field %}
+  <form method="POST" action="" enctype="multipart/form-data"> 
+    <div class="form-group">
+      {{ render_field(form.name, class_="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ render_field(form.description, class_="form-control", id="editor") }} 
+    </div>
+    <div class="form-group"> 
+      {{ render_field(form.file, class_="form-control-file") }} 
+      {% if danger_message %}
+        <small class="text-danger">{{ danger_message }}</small> 
+        <br>
+      {% endif %}
+      {% if current_file %}
+        <small class="text-muted">Current File: {{ current_file }}</small> 
+      {% endif %}
+    </div>
+    <p>
+      <input class="btn btn-primary" type="submit" value="Submit">
+      <a href="{{ url_for('class_content', class_id=class_id) }}" class="btn btn-default">Cancel</a>
+    </p>
+  </form>
+</div>
+{% endblock %}
+
+
+

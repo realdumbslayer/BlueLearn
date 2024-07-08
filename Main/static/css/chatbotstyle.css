@@ -1,0 +1,157 @@
+body {
+  font-family: 'Heebo', sans-serif;
+  background-color: rgb(255, 255, 255);
+  margin: 0;
+  padding: 0;
+  color: #000000; /* Text color set to white */
+}
+.container {
+  max-width: 1500px; /* Increased width */
+  margin:auto;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex; /* Make the container flex */
+  flex-direction: column; /* Align children in a column */
+  height: 80vh; /* 80% of the viewport height */
+  font-size: 1rem;
+}
+.chat-box {
+  flex: 1; /* Take up remaining space */
+  overflow-y: scroll; /* Enable vertical scrolling */
+  padding: 10px;
+  margin-top: 10px;
+}
+.message {
+  margin-bottom: 10px;
+  display: flex;
+}
+
+.user-message {
+  margin-right: auto;
+  padding: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
+  text-align: left;
+  color:black;
+}
+.bot-message {
+  margin-right: auto;
+  background-color: #c8fffa;
+  border-radius: 10px;
+  padding: 10px;
+  max-width: auto;
+  word-wrap: break-word;
+  text-align: left;
+}
+.user-input-container {
+  display: center;
+  align-items: center;
+  margin-right: 0; /* Remove any margin */
+  position: relative; /* Make the container relative */
+
+} 
+
+.input-with-send-btn {
+  display: flex;
+  align-items: center;
+  width: 100%; /* Ensure the container takes up the full width */
+  padding-bottom: 10px;
+
+}
+
+.user-input {
+  flex: 1;
+  padding-right: 1px; /* Add padding to accommodate the button */
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: white;
+  color: black;
+  outline: none;
+}
+
+.send-btn {
+  position: absolute; /* Position the button absolutely */
+  right: 5px;
+  bottom: 50%; /* Adjust as needed */
+  transform: translateY(50%); /* Center vertically */
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: white;
+  color: gray;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 5px;
+}
+/* Scrollbar styles */
+.chat-box::-webkit-scrollbar {
+  width: 10px; /* Width of the scrollbar */
+}
+
+.chat-box::-webkit-scrollbar-thumb {
+  background-color: #06BBCC; /* Color of the scrollbar thumb */
+  border-radius: 5px; /* Rounded corners */
+}
+
+/* Typing animation */
+.typing-indicator {
+  color: #000000;
+  margin-left: 10px;
+  font-style: italic;
+  animation: typing 0.2s infinite alternate;
+}
+
+@keyframes typing {
+  from { opacity: 0.5; }
+  to { opacity: 1; }
+}
+      /* Styles for your logo */
+  .logo {
+  width: 50px; /* Adjust as needed */
+  height: 50px;
+  margin-right: 10px; /* Adjust spacing */
+  border-radius: 50%; /* Make it round */
+}
+
+.ulogo {
+  width: 40px; /* Adjust as needed */
+  height: 40px;
+  margin-right: 10px; /* Adjust spacing */
+  border-radius: 30px; /* Rounded corners */
+}
+
+.message {
+  margin-bottom: 10px; /* Add some space between each message */
+}
+
+.sender {
+  font-weight: bold; /* Make the sender text bold */
+  margin-bottom: 5px; /* Add some space below the sender */
+}
+
+.message-text {
+  margin-left: 20px; /* Indent the message text */
+  color:black;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.title-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 10px; /* Adjust top position as needed */
+/* Adjust left position as needed */
+}
